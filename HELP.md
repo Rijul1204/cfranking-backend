@@ -1,8 +1,10 @@
 # Codeforces Ranking
 
 #### Build Project
-`./mvnw clean build`
+`./mvnw clean install`
 
+#### Start the app
+`./mvnw spring-boot:run`
 #### Redis Setup
 Download and Build
 ```
