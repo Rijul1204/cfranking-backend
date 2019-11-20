@@ -9,6 +9,6 @@ public class RankRow {
     String handle;
     boolean ghost;
     long rank;
-    long points;
+    String points;
     List<ProblemResult> problemResultList;
 }
