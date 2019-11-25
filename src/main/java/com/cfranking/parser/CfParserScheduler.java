@@ -2,6 +2,7 @@ package com.cfranking.parser;
 
 import com.cfranking.client.CfClient;
 import com.cfranking.model.CfContest;
+import com.cfranking.model.CfContestList;
 import com.cfranking.model.CfRanklistResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -58,7 +59,7 @@ public class CfParserScheduler {
      * @return
      */
     private List<Integer> getActiveContest() {
-        CfContest contestList = cfClient.getContestList();
+        CfContestList contestList = cfClient.getContestList();
         // TODO : convert and find active list
         return Arrays.asList(1065);
     }

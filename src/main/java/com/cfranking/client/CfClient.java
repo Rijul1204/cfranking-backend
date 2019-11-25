@@ -1,6 +1,6 @@
 package com.cfranking.client;
 
-import com.cfranking.model.CfContest;
+import com.cfranking.model.CfContestList;
 import com.cfranking.model.CfRanklistResponse;
 import com.cfranking.model.CfRanklistResponseWrapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,7 +25,7 @@ public class CfClient {
                 + "&showUnofficial=" + showUnofficial, CfRanklistResponseWrapper.class).getResult();
     }
 
-    public CfContest getContestList() {
-        return restTemplate.getForObject(CONTEST_FETCH_URL, CfContest.class);
+    public CfContestList getContestList() {
+        return restTemplate.getForObject(CONTEST_FETCH_URL, CfContestList.class);
     }
 }
