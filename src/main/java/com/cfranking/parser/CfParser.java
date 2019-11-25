@@ -6,6 +6,7 @@ import com.cfranking.dto.Problem;
 import com.cfranking.dto.RankRow;
 import com.cfranking.dto.Standings;
 import com.cfranking.model.CfContest;
+import com.cfranking.model.CfContestList;
 import com.cfranking.model.CfRanklistResponse;
 import com.cfranking.model.CfRanklistRow;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,6 +23,11 @@ public class CfParser {
     CfClient cfClient;
 
     Map<String, String> handleToCountryMap;
+
+    public List<CfContest> getContestList() {
+        CfContestList cfContestList = cfClient.getContestList();
+        return cfContestList.getResult();
+    }
 
     public Standings getStandings(int contestId) {
         CfRanklistResponse contestResults = cfClient.getContestResults(contestId, false);
