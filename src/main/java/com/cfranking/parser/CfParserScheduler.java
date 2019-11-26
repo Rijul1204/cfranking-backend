@@ -52,7 +52,7 @@ public class CfParserScheduler {
 
     private Callable<CfRanklistResponse> getRunnableTask(int contestId) {
 
-        return () -> cfClient.getContestResults(contestId);
+        return () -> cfClient.getContestResults(contestId).getResult();
     }
 
     /**

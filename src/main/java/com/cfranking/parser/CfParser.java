@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Component
@@ -22,7 +21,8 @@ public class CfParser {
     @Autowired
     CfClient cfClient;
 
-    Map<String, String> handleToCountryMap;
+    @Autowired
+    CfUserStore userStore;
 
     public List<CfContest> getContestList() {
         CfContestList cfContestList = cfClient.getContestList();
@@ -30,12 +30,17 @@ public class CfParser {
     }
 
     public Standings getStandings(int contestId) {
-        CfRanklistResponse contestResults = cfClient.getContestResults(contestId, false);
+
+        CfRanklistResponse contestResults = cfClient.getContestResults(contestId, false).getResult();
         return convertToStandings(contestResults);
     }
 
+
     // TODO : Refactor to new bean
     private Standings convertToStandings(CfRanklistResponse contestResults) {
+
+        userStore.generateMissingHandlesInfo(contestResults);
+
         Standings standings = new Standings();
         standings.setContestMeta(getContestMeta(contestResults));
         standings.setRows(getRows(contestResults.getRows()));
@@ -50,6 +55,7 @@ public class CfParser {
                     rankRow.setHandle(row.getParty().getMembers().get(0).getHandle());
                     rankRow.setRank(row.getRank());
                     rankRow.setPoints(row.getPoints());
+                    rankRow.setCountry(userStore.getCountryName(rankRow.getHandle()));
                     return rankRow;
                 })
                 .collect(Collectors.toList());
