@@ -3,6 +3,7 @@ package com.cfranking.controller;
 import com.cfranking.dao.ContestDao;
 import com.cfranking.dto.Standings;
 import com.cfranking.model.CfContest;
+import com.cfranking.model.CfContestList;
 import com.cfranking.parser.CfParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,13 +19,13 @@ import java.util.List;
 @RestController
 public class CfRankingController {
 
+    private Logger logger = LoggerFactory.getLogger(CfRankingController.class);
+
     @Autowired
     private CfParser cfParser;
 
     @Autowired
     private ContestDao contestDao;
-
-    Logger logger = LoggerFactory.getLogger(CfRankingController.class);
 
     @RequestMapping("/standings/{contestId}")
     public Standings fetchStandings(@PathVariable("contestId") int contestId,
@@ -33,12 +34,12 @@ public class CfRankingController {
     }
 
     @RequestMapping("/contests")
-    public List<CfContest> fetchStandings() {
+    public CfContestList fetchStandings() {
         List<CfContest> cfContests = contestDao.getContestList();
 
         if (!CollectionUtils.isEmpty(cfContests)) {
             logger.debug("Cache Hit for CfContest List");
-            return cfContests;
+            return new CfContestList(cfContests);
         }
 
         logger.debug("Cache Miss for CfContest List");
@@ -47,6 +48,6 @@ public class CfRankingController {
 
         contestDao.persist(cfContests);
 
-        return cfContests;
+        return new CfContestList(cfContests);
     }
 }
