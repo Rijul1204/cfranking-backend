@@ -38,7 +38,7 @@ public class CfRankingController {
         List<CfContest> cfContests = contestDao.getContestList();
 
         if (!CollectionUtils.isEmpty(cfContests)) {
-            logger.debug("Cache Hit for CfContest List");
+            logger.debug("Cache Hit for CfContest List, Size: {}" , cfContests.size());
             return new CfContestList(cfContests);
         }
 
