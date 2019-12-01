@@ -1,6 +1,8 @@
 package com.cfranking.model;
 
-public class CfContest {
+import java.io.Serializable;
+
+public class CfContest implements Serializable {
 
     private int id;
     private String name;

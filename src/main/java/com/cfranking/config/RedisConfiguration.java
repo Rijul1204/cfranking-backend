@@ -7,6 +7,7 @@ import org.springframework.data.redis.connection.RedisPassword;
 import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
 import org.springframework.data.redis.connection.jedis.JedisConnectionFactory;
 import org.springframework.data.redis.core.HashOperations;
+import org.springframework.data.redis.core.ListOperations;
 import org.springframework.data.redis.core.RedisTemplate;
 
 @Configuration
@@ -20,7 +21,13 @@ class RedisConfiguration {
         return redisTemplate().opsForHash();
     }
 
-    private RedisTemplate<String, Object> redisTemplate() {
+    @Bean
+    public ListOperations listOperations() {
+        return redisTemplate().opsForList();
+    }
+
+    @Bean
+    public RedisTemplate<String, Object> redisTemplate() {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setEnableDefaultSerializer(true);
         template.setConnectionFactory(redisConnectionFactory());
