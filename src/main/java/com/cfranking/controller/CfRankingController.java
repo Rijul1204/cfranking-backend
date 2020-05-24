@@ -1,52 +1,64 @@
 package com.cfranking.controller;
 
-import com.cfranking.dao.ContestDao;
 import com.cfranking.dto.Standings;
-import com.cfranking.model.CfContest;
+import com.cfranking.entity.CfContest;
 import com.cfranking.model.CfContestList;
 import com.cfranking.parser.CfParser;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.cfranking.repository.ContestRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.util.CollectionUtils;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @RestController
 public class CfRankingController {
 
-    private Logger logger = LoggerFactory.getLogger(CfRankingController.class);
+    public static final String FINISHED = "FINISHED";
+    private static List<CfContest> cfContests = new ArrayList<>();
+
+    private final CfParser cfParser;
+    private final ContestRepository contestRepository;
 
     @Autowired
-    private CfParser cfParser;
-
-    @Autowired
-    private ContestDao contestDao;
+    public CfRankingController(CfParser cfParser, ContestRepository contestRepository) {
+        this.cfParser = cfParser;
+        this.contestRepository = contestRepository;
+    }
 
     @RequestMapping("/standings/{contestId}")
+    @CrossOrigin
     public Standings fetchStandings(@PathVariable("contestId") int contestId,
                                     @RequestParam(value = "country", defaultValue = "all") String country) {
-        return cfParser.getStandings(contestId);
+        return cfParser.getStandings(contestId, country);
     }
 
     @RequestMapping("/contests")
-    public CfContestList fetchStandings() {
-        List<CfContest> cfContests = contestDao.getContestList();
+    @CrossOrigin
+    public CfContestList fetchContestList() {
 
-        if (!CollectionUtils.isEmpty(cfContests)) {
-            logger.debug("Cache Hit for CfContest List, Size: {}" , cfContests.size());
-            return new CfContestList(cfContests);
+        if (this.cfContests.isEmpty()) {
+            contestRepository.findAll().forEach(cfContest -> {
+                if (cfContest.getPhase().equals(FINISHED)) {
+                    this.cfContests.add(cfContest);
+                }
+            });
         }
+        Collections.reverse(cfContests);
+        return new CfContestList(cfContests);
+    }
 
-        logger.debug("Cache Miss for CfContest List");
+    @RequestMapping("/refresh-contests")
+    @CrossOrigin
+    public CfContestList refreshContestList() {
 
         cfContests = cfParser.getContestList();
-
-        contestDao.persist(cfContests);
+        contestRepository.saveAll(cfContests);
 
         return new CfContestList(cfContests);
     }

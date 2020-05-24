@@ -1,17 +1,18 @@
 package com.cfranking.client;
 
 import com.cfranking.model.CfContestList;
-import com.cfranking.model.CfRanklistResponse;
 import com.cfranking.model.CfRanklistResponseWrapper;
 import com.cfranking.model.CfResponseWrapper;
-import com.cfranking.model.CfUserInfo;
+import com.cfranking.entity.CfUserInfo;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.util.CollectionUtils;
 import org.springframework.web.client.RestTemplate;
 
+import java.util.Collections;
 import java.util.List;
 
 @Component
@@ -38,6 +39,10 @@ public class CfClient {
     }
 
     public List<CfUserInfo> getUserInfo(List<String> handles) {
+
+        if (CollectionUtils.isEmpty(handles)) {
+            return Collections.EMPTY_LIST;
+        }
 
         StringBuilder stringBuilder = new StringBuilder(USER_INFO_FETCH_URL);
         boolean first = true;

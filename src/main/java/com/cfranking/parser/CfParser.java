@@ -5,60 +5,83 @@ import com.cfranking.dto.ContestMeta;
 import com.cfranking.dto.Problem;
 import com.cfranking.dto.RankRow;
 import com.cfranking.dto.Standings;
-import com.cfranking.model.CfContest;
+import com.cfranking.entity.CfContest;
 import com.cfranking.model.CfContestList;
 import com.cfranking.model.CfRanklistResponse;
 import com.cfranking.model.CfRanklistRow;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 @Component
 public class CfParser {
 
-    @Autowired
-    CfClient cfClient;
+    private final CfClient cfClient;
+    private final CfUserStore userStore;
 
-    @Autowired
-    CfUserStore userStore;
+    public CfParser(CfClient cfClient, CfUserStore userStore) {
+        this.cfClient = cfClient;
+        this.userStore = userStore;
+    }
 
     public List<CfContest> getContestList() {
         CfContestList cfContestList = cfClient.getContestList();
         return cfContestList.getResult();
     }
 
-    public Standings getStandings(int contestId) {
+    public Standings getStandings(int contestId, String country) {
 
         CfRanklistResponse contestResults = cfClient.getContestResults(contestId, false).getResult();
-        return convertToStandings(contestResults);
+        userStore.generateMissingHandlesInfo(contestResults);
+        return convertToStandings(contestResults, country);
     }
 
 
     // TODO : Refactor to new bean
-    private Standings convertToStandings(CfRanklistResponse contestResults) {
-
-        userStore.generateMissingHandlesInfo(contestResults);
+    private Standings convertToStandings(CfRanklistResponse contestResults, String country) {
 
         Standings standings = new Standings();
         standings.setContestMeta(getContestMeta(contestResults));
-        standings.setRows(getRows(contestResults.getRows()));
+        standings.setRows(getRows(contestResults.getRows(), country));
         return standings;
     }
 
+    private List<RankRow> getRows(List<CfRanklistRow> rows, String country) {
+
+        return getRows(rows)
+                .stream()
+                .filter(rankRow ->
+                        country.equals("all") ? true : country.equals(rankRow.getCountry())
+                ).collect(Collectors.toList());
+    }
+
     private List<RankRow> getRows(List<CfRanklistRow> rows) {
+        final AtomicInteger counter = new AtomicInteger();
+        rows.stream()
+                .map(row -> {
+                    return row.getParty().getMembers().get(0).getHandle();
+                }).collect(Collectors.toList())
+                .stream()
+                .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / 500))
+                .values()
+                .forEach(list -> userStore.retrieveUserInfo(list));
+
+
 
         return rows.stream()
                 .map(row -> {
                     RankRow rankRow = new RankRow();
                     rankRow.setHandle(row.getParty().getMembers().get(0).getHandle());
-                    rankRow.setRank(row.getRank());
+                    rankRow.setStanding(row.getRank());
                     rankRow.setPoints(row.getPoints());
-                    rankRow.setCountry(userStore.getCountryName(rankRow.getHandle()));
+                    rankRow.setCountry(userStore.getUser(rankRow.getHandle()).getCountry());
+                    rankRow.setRating(userStore.getUser(rankRow.getHandle()).getRating());
+                    rankRow.setUserRank(userStore.getUser(rankRow.getHandle()).getRank());
+                    rankRow.setProblemResultList(row.getProblemResults());
                     return rankRow;
-                })
-                .collect(Collectors.toList());
+                }).collect(Collectors.toList());
     }
 
     private ContestMeta getContestMeta(CfRanklistResponse contestResults) {

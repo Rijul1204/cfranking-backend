@@ -6,7 +6,7 @@ import lombok.Data;
 public class Problem {
     String index;
     String name;
-    String points;
+    int points;
     int rating;
     int score;
 }

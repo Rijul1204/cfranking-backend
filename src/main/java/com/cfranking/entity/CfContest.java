@@ -1,9 +1,15 @@
-package com.cfranking.model;
+package com.cfranking.entity;
 
+import javax.persistence.Entity;
+import javax.persistence.Id;
+import javax.persistence.Table;
 import java.io.Serializable;
 
+@Entity
+@Table(name = "Contest")
 public class CfContest implements Serializable {
 
+    @Id
     private int id;
     private String name;
     private String type;

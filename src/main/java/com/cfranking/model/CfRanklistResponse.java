@@ -1,5 +1,6 @@
 package com.cfranking.model;
 
+import com.cfranking.entity.CfContest;
 import lombok.Data;
 
 import java.util.List;

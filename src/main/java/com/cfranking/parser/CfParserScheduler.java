@@ -1,7 +1,6 @@
 package com.cfranking.parser;
 
 import com.cfranking.client.CfClient;
-import com.cfranking.model.CfContest;
 import com.cfranking.model.CfContestList;
 import com.cfranking.model.CfRanklistResponse;
 import org.springframework.beans.factory.annotation.Autowired;
