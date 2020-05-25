@@ -1,5 +1,6 @@
 package com.cfranking.dto;
 
+import com.cfranking.model.CfProblem;
 import lombok.Data;
 
 import java.util.List;
@@ -8,7 +9,11 @@ import java.util.List;
 public class RankRow {
     String handle;
     boolean ghost;
-    long rank;
-    long points;
-    List<ProblemResult> problemResultList;
+    long standing;
+    String points;
+    String country;
+    String org;
+    String rating;
+    String userRank;
+    List<CfProblem> problemResultList;
 }

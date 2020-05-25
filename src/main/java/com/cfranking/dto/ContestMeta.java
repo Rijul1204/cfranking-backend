@@ -6,9 +6,8 @@ import java.util.List;
 
 @Data
 public class ContestMeta {
-    String id;
+    int id;
     String name;
     String phase;
     List<Problem> problemList;
-
 }

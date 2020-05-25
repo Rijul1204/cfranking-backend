@@ -1,11 +1,13 @@
 package com.cfranking.dto;
 
-import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
+
+import java.io.Serializable;
 
 @Data
-public class User {
+@AllArgsConstructor
+@NoArgsConstructor
+public class User implements Serializable {
     String handle;
     String country;
     String organization;
