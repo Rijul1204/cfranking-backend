@@ -1,5 +1,6 @@
 package com.cfranking.controller;
 
+import com.cfranking.cache.CacheStore;
 import com.cfranking.dto.Standings;
 import com.cfranking.entity.CfContest;
 import com.cfranking.model.CfContestList;
@@ -20,7 +21,6 @@ import java.util.List;
 public class CfRankingController {
 
     public static final String FINISHED = "FINISHED";
-    private static List<CfContest> cfContests = new ArrayList<>();
 
     private final CfParser cfParser;
     private final ContestRepository contestRepository;
@@ -42,13 +42,16 @@ public class CfRankingController {
     @CrossOrigin
     public CfContestList fetchContestList() {
 
-        if (this.cfContests.isEmpty()) {
+        List<CfContest> cfContests = CacheStore.getCfContests();
+        if (cfContests.isEmpty()) {
             contestRepository.findAll().forEach(cfContest -> {
                 if (cfContest.getPhase().equals(FINISHED)) {
-                    this.cfContests.add(cfContest);
+                    cfContests.add(cfContest);
                 }
             });
+            CacheStore.setCfContests(cfContests);
         }
+
         Collections.reverse(cfContests);
         return new CfContestList(cfContests);
     }
@@ -57,9 +60,8 @@ public class CfRankingController {
     @CrossOrigin
     public CfContestList refreshContestList() {
 
-        cfContests = cfParser.getContestList();
-        contestRepository.saveAll(cfContests);
+        contestRepository.saveAll(cfParser.getContestList());
 
-        return new CfContestList(cfContests);
+        return new CfContestList();
     }
 }

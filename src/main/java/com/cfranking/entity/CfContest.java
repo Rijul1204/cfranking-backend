@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Table;
 import java.io.Serializable;
+import java.util.TreeSet;
 
 @Entity
 @Table(name = "Contest")
@@ -45,5 +46,18 @@ public class CfContest implements Serializable {
 
     public void setPhase(String phase) {
         this.phase = phase;
+        TreeSet<Integer> a = new TreeSet<>();
+        a.ceiling(10);
+    }
+
+    @Override
+    public String toString() {
+        final StringBuilder sb = new StringBuilder("CfContest{");
+        sb.append("id=").append(id);
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", type='").append(type).append('\'');
+        sb.append(", phase='").append(phase).append('\'');
+        sb.append('}');
+        return sb.toString();
     }
 }

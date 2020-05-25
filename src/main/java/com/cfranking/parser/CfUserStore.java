@@ -1,5 +1,6 @@
 package com.cfranking.parser;
 
+import com.cfranking.cache.CacheStore;
 import com.cfranking.client.CfClient;
 import com.cfranking.entity.CfUserInfo;
 import com.cfranking.model.CfRanklistResponse;
@@ -21,18 +22,15 @@ public class CfUserStore {
     private static final long ENTRY_LIMIT = 100000000;
     private final int CHUNK_SIZE = 500;
 
-    Cache<String, CfUserInfo> cache;
-
     private final CfClient cfClient;
     private final PersonsRepository personsRepository;
 
     public CfUserStore(CfClient cfClient, PersonsRepository personsRepository) {
         this.cfClient = cfClient;
         this.personsRepository = personsRepository;
-        cache = CacheBuilder.newBuilder().maximumSize(ENTRY_LIMIT).build();
         personsRepository.findAll().forEach(
                 (person) -> {
-                    cache.put(person.getHandle(), person);
+                    CacheStore.cache.put(person.getHandle(), person);
                 }
         );
     }
@@ -43,7 +41,7 @@ public class CfUserStore {
         Collection<List<String>> missingHandles = contestResults.getRows().stream()
                 .flatMap(row -> row.getParty().getMembers().stream())
                 .map(member -> member.getHandle())
-                .filter(handle -> cache.getIfPresent(handle) == null)
+                .filter(handle -> CacheStore.cache.getIfPresent(handle) == null)
                 .collect(Collectors.toList())
                 .stream()
                 .collect(Collectors.groupingBy(it -> counter.getAndIncrement() / CHUNK_SIZE))
@@ -54,12 +52,12 @@ public class CfUserStore {
 
     public CfUserInfo getUser(String handle) {
 
-        CfUserInfo result = cache.getIfPresent(handle);
+        CfUserInfo result = CacheStore.cache.getIfPresent(handle);
         if (result != null) {
             return result;
         }
         retrieveUserInfo(Arrays.asList(handle));
-        result = cache.getIfPresent(handle);
+        result = CacheStore.cache.getIfPresent(handle);
         if (result != null) {
             return result;
         }
@@ -70,7 +68,7 @@ public class CfUserStore {
 
         List<String> missingHandles = handles
                 .stream()
-                .filter(handle -> cache.getIfPresent(handle) == null)
+                .filter(handle -> CacheStore.cache.getIfPresent(handle) == null)
                 .collect(Collectors.toList());
 
         Map<String, CfUserInfo> userInfoFromDB = personsRepository
@@ -82,7 +80,7 @@ public class CfUserStore {
             if (user.getCountry() == null) {
                 user.setCountry("");
             }
-            cache.put(user.getHandle(), user);
+            CacheStore.cache.put(user.getHandle(), user);
         }
 
         missingHandles = missingHandles.stream().filter(handle -> !userInfoFromDB.containsKey(handle))
@@ -97,7 +95,7 @@ public class CfUserStore {
             if (user.getCountry() == null) {
                 user.setCountry("");
             }
-            cache.put(user.getHandle(), user);
+            CacheStore.cache.put(user.getHandle(), user);
         }
         personsRepository.saveAll(userList);
 
